@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
 import './App.css';
 import StockInfo from './components/StockInfo'
-import {loadQuoteForStock} from './api/iex'
+import {loadQuoteForStock, loadLogoForStock} from './api/iex'
 import Error from './components/Error'
+import Logo from './components/Logo'
 
-
+console.log(loadLogoForStock('goog'))
 
 class App extends Component {
   state = {
-    symbol: 'goog',
+    symbol: 'ter',
     quote: null,
-    error: false
+    error: false,
+    logo:  'ter'
   };
 
   // when the app gets mounted run our load quote
@@ -21,10 +23,17 @@ class App extends Component {
 
   // load our api quote.
   loadQuote() {
+    loadLogoForStock(this.state.symbol)
+      .then((logo) => {
+        this.setState({ logo: logo })
+      })
+      .catch((err) => {
+        this.setState({error: true, logo: null})
+      })
     loadQuoteForStock(this.state.symbol)
       // if you get the api back then load the stats into quote
       .then((quote) => {
-        console.log(quote)
+        // console.log(quote)
         this.setState({ quote: quote, error: false})
       })
       // if errors print them
@@ -32,6 +41,8 @@ class App extends Component {
         this.setState({error: true, quote: null})
       })
   }
+
+
 
   //handle our intake to change state
   handleSymbolchange = (event) => {
@@ -49,19 +60,19 @@ class App extends Component {
     return (
       <div className="App">
         <br/>
-          <StockInfo {...this.state.quote}/>
-          <span>
-            <input
-              value={this.state.symbol}
-              placeholder="Enter Symbol"
-              onChange= {this.handleSymbolchange}
-            />
-            <button
-              onClick = {this.handleButtonClick} > Get Quote
-            </button>
-              <Error error={this.state.error}/>
+        <Error error={this.state.error}/>
+        <Logo  {...this.state.logo}/>
+        <StockInfo {...this.state.quote}/>
+        <span>
+          <input
+            value={this.state.symbol}
+            placeholder="Enter Symbol"
+            onChange= {this.handleSymbolchange}
+          />
+          <button
+            onClick = {this.handleButtonClick} > Get Quote
+          </button>
         </span>
-
       </div>
     );
   }
